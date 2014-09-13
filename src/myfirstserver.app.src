@@ -1,0 +1,12 @@
+{application, myfirstserver,
+ [
+  {description, "My first server for Erlang lessons"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { myfirstserver_app, []}},
+  {env, []}
+ ]}.
