@@ -28,12 +28,13 @@ start_link() ->
 %% ------------------------------------------------------------------
 
 init(Args) ->
+    io:format("starting serv init~n"),
     {ok, Args}.
 
-handle_call(_Request, _From, State) ->
+handle_call(_Request, _From, State) ->      %синхронно
     {reply, ok, State}.
 
-handle_cast(_Msg, State) ->
+handle_cast(_Msg, State) ->     %асинхронно
     {noreply, State}.
 
 handle_info(_Info, State) ->
