@@ -9,7 +9,7 @@
 %% ------------------------------------------------------------------
 
 -export([start_link/0]).
--export([insert/3]).
+-export([insert/3, lookup/1]).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Exports
@@ -32,6 +32,9 @@ insert(Key, Data, Time) ->
     Record = #cache_item{key=Key, expire_date=ExpDate, user_record=Data},
     gen_server:call(?MODULE, {insert, Record}).
 
+lookup(Key) ->
+    gen_server:call(?MODULE, {lookup, Key}).
+
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
@@ -47,6 +50,15 @@ init(Args) ->
 handle_call({insert, Record}, _From, State) ->
     ets:insert(for_cache, Record),
     {reply, inserted, State};
+
+handle_call({lookup, Key}, _From, State) ->
+    IsKeyRight = ets:member(for_cache, Key),
+    case IsKeyRight of
+        true  -> Answer = ets:lookup_element(
+                 for_cache, Key, #cache_item.user_record);
+        false -> Answer = 'There is no such element'
+    end,
+    {reply, Answer, State};
 
 handle_call(_Request, _From, State) ->      % синхронно
     {reply, ok, State}.
