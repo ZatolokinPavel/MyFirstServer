@@ -2,14 +2,14 @@
 -behaviour(gen_server).
 -define(SERVER, ?MODULE).
 
--record(cache_item, {expire_date, user_record}).
+-record(cache_item, {key, expire_date, user_record}).
 
 %% ------------------------------------------------------------------
 %% API Function Exports
 %% ------------------------------------------------------------------
 
 -export([start_link/0]).
--export([insert/2]).
+-export([insert/3]).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Exports
@@ -26,10 +26,10 @@ start_link() ->
     io:format("starting serv link~n"),
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-insert(Data, Time) ->
+insert(Key, Data, Time) ->
     {Mega, Seconds, _} = now(),
     ExpDate = Mega*1000000+Seconds+Time,
-    Record = #cache_item{expire_date=ExpDate, user_record=Data},
+    Record = #cache_item{key=Key, expire_date=ExpDate, user_record=Data},
     gen_server:call(?MODULE, {insert, Record}).
 
 
@@ -40,7 +40,7 @@ insert(Data, Time) ->
 init(Args) ->
     io:format("starting serv init~n"),
     ets:new(for_cache, [named_table, public, set,
-            {keypos, #cache_item.expire_date}]),
+            {keypos, #cache_item.key}]),
     self() ! revisionETS,   % Посылаем сообщение самому себе
     {ok, Args}.
 
