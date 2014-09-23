@@ -27,8 +27,8 @@ start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 insert(Data, Time) ->
-    {Mega, Seconds, Fraction} = now(),
-    ExpDate = {Mega, Seconds+Time, Fraction},
+    {Mega, Seconds, _} = now(),
+    ExpDate = Mega*1000000+Seconds+Time,
     Record = #cache_item{expire_date=ExpDate, user_record=Data},
     gen_server:call(?MODULE, {insert, Record}).
 
@@ -78,7 +78,8 @@ revisionETS(Key) when Key /= '$end_of_table' ->
     NextKey = ets:next(for_cache, Key),
     Pos = #cache_item.expire_date,
     ElementTime = ets:lookup_element(for_cache, Key, Pos),
-    case ElementTime > now() of
+    {Mega, Seconds, _} = now(),
+    case ElementTime > Mega*1000000+Seconds of
         false -> ets:delete(for_cache, Key);
         true  -> true
     end,
